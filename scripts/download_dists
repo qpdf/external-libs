@@ -1,0 +1,105 @@
+#!/usr/bin/env python3
+import os
+import re
+import requests
+import sys
+from operator import itemgetter
+from packaging import version
+
+
+def warn(*args, **kwargs):
+    print(*args, **kwargs, file=sys.stderr)
+
+
+def parse_jpeg_version(v):
+    # libjpeg versions look like v<n><l> where n is a number and <l>
+    # is an optional letter. We need our own custom sorter.
+    m = re.search(r'^(\d+)([a-z]?)$', v[1])
+    if m:
+        return (int(m.group(1)), m.group(2))
+    else:
+        return (-1, '')
+
+
+def parse_openssl_version(v):
+    # openssl versions look like n.n.n<l> where n is a number and <l>
+    # is an optional letter. We need our own custom sorter.
+    m = re.search(r'^((?:\d+)(?:\.\d+)*)([a-z]?)$', v[1])
+    if m:
+        return (version.parse(m.group(1)), m.group(2))
+    else:
+        return (version.parse('0'), '')
+
+
+def download_file(url):
+    # From https://stackoverflow.com/questions/16694907/
+    # download-large-file-in-python-with-requests
+    local_filename = os.path.join('dist', url.split('/')[-1])
+    if os.path.exists(local_filename):
+        warn('Using existing', local_filename)
+        return
+    warn('Downloading', local_filename)
+    with requests.get(url, stream=True) as r:
+        r.raise_for_status()
+        with open(local_filename, 'wb') as f:
+            for chunk in r.iter_content(chunk_size=8192):
+                f.write(chunk)
+    return local_filename
+
+
+jpeg_url = 'http://www.ijg.org/files/'
+r = requests.get(jpeg_url)
+versions = []
+for m in re.finditer(r'(?i)href="(jpegsrc\.v(.*?)\.tar\.gz)"', r.text):
+    versions.append((m.group(1), m.group(2)))
+jpeg_version = max(versions, key=parse_jpeg_version)
+jpeg_src = f'{jpeg_url}{jpeg_version[0]}'
+
+zlib_url = 'http://www.zlib.net/'
+r = requests.get(zlib_url)
+versions = []
+for m in re.finditer(r'(?i)href="(zlib-((?:\w+\.)+\w+).*\.tar.gz)"', r.text):
+    versions.append((m.group(1), version.parse(m.group(2))))
+zlib_version = max(versions, key=itemgetter(1))
+zlib_src = f'{zlib_url}{zlib_version[0]}'
+
+openssl_url = 'https://www.openssl.org/source/'
+r = requests.get(openssl_url)
+versions = []
+for m in re.finditer(r'(?i)href="(openssl-(1.*?)\.tar\.gz)"', r.text):
+    versions.append((m.group(1), m.group(2)))
+openssl_version = max(versions, key=parse_openssl_version)
+openssl_src = f'{openssl_url}{openssl_version[0]}'
+
+overall_version = []
+
+perl_url = 'http://strawberryperl.com/releases.html'
+r = requests.get(perl_url)
+versions = []
+for m in re.finditer(r'(?i)href="(.*?)"', r.text):
+    v = m.group(1)
+    if '64bit-portable' in v:
+        m = re.search(r'perl-(\d+(\.\d+)*)-64bit-portable', v)
+        if m:
+            versions.append((v, version.parse(m.group(1))))
+perl_version = max(versions, key=itemgetter(1))
+perl_src = perl_version[0]
+
+os.makedirs('dist', exist_ok=True)
+download_file(jpeg_src)
+download_file(zlib_src)
+download_file(openssl_src)
+
+
+def print_version(prefix, v):
+    overall_version.append(f'{prefix}-{v[1]}')
+    print(f'{prefix}_dist={v[0]}')
+    print(f'{prefix}_version={v[1]}')
+
+
+print_version('jpeg', jpeg_version)
+print_version('openssl', openssl_version)
+print_version('zlib', zlib_version)
+print(f'overall_version={",".join(overall_version)}')
+print(f'perl_src={perl_src}')
+print(f'perl_dist={os.path.basename(perl_src)}')

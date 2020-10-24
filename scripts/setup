@@ -1,0 +1,24 @@
+#!/bin/bash
+
+set -ex
+
+cd $(dirname $0)/..
+
+rm -rf dist build stage external-libs
+
+if [[ "$(python --version 2>/dev/null)" =~ 'Python 3' ]]; then
+    python=python
+elif [[ "$(python3 --version 2>/dev/null)" =~ 'Python 3' ]]; then
+    python=python3
+fi
+
+rm -rf venv
+$python -m venv venv
+if [ -f venv/Scripts/activate ]; then
+    source venv/Scripts/activate
+else
+    source venv/bin/activate
+fi
+pip install requests packaging
+mkdir -p dist
+python scripts/download_dists > dist/versions

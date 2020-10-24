@@ -1,0 +1,25 @@
+#!/bin/sh
+
+set -ex
+cd $(dirname $0)/..
+
+rm -rf external-libs qpdf-external-libs-bin.zip
+mkdir external-libs
+mkdir external-libs/include
+cp -p stage/64/include/*.h external-libs/include
+cp -p stage/64/mingw*/include/*.h external-libs/include
+cp -a stage/64/include/openssl external-libs/include
+for i in 32 64; do
+    mkdir external-libs/lib-mingw$i
+    cp -p stage/$i/lib/lib*.a external-libs/lib-mingw$i
+    cp -p stage/$i/mingw*/lib/lib*.a external-libs/lib-mingw$i
+    mkdir external-libs/lib-msvc$i
+    cp -p stage/$i/lib/*.lib external-libs/lib-msvc$i
+    (cd external-libs/lib-msvc$i; \
+        mv libssl.lib ssl.lib; mv libcrypto.lib crypto.lib)
+done
+
+mkdir -p distribution
+zip -r distribution/qpdf-external-libs-bin.zip external-libs
+mv dist external-libs-src
+zip -r distribution/qpdf-external-libs-src.zip external-libs-src

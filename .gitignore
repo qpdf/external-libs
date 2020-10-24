@@ -1,0 +1,6 @@
+build
+dist
+external-libs
+stage
+qpdf-external-libs-bin.zip
+venv

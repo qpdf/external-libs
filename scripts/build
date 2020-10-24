@@ -1,0 +1,89 @@
+#!/bin/sh
+
+set -ex
+cd $(dirname $0)/..
+
+if [ "$1" != "" ]; then
+    PATH=/c/msys64/mingw$1/bin:$PATH
+fi
+
+if g++ -v 2>&1 | grep Target: | grep -q x86_64; then
+    wordsize=64
+else
+    wordsize=32
+fi
+cwd=`pwd`
+rm -rf stage/$wordsize
+mkdir -p stage
+
+g++ -v
+cl
+
+rm -rf build
+mkdir build
+cd build
+
+source ../dist/versions
+tar xzf ../dist/$jpeg_dist
+tar xzf ../dist/$openssl_dist
+tar xzf ../dist/$zlib_dist
+mkdir perl
+cd perl
+curl $perl_src -o $perl_dist
+unzip -q $perl_dist
+cd ..
+
+cd zlib*
+make -j$(nproc) -f win32/Makefile.gcc install \
+    BINARY_PATH=$cwd/stage/$wordsize/bin \
+    INCLUDE_PATH=$cwd/stage/$wordsize/include \
+    LIBRARY_PATH=$cwd/stage/$wordsize/lib
+make -f win32/Makefile.gcc clean
+
+rm -f *.lib *.obj
+for i in adler32 compress crc32 deflate gzclose gzlib gzread \
+       gzwrite infback inffast inflate inftrees trees uncompr zutil; do
+    cl -nologo -O2 -Zi -Gy -MD -c $i.c
+done
+lib -nologo /out:z.lib *.obj
+cp z.lib $cwd/stage/$wordsize/lib
+cd ..
+
+cd jpeg*
+
+./configure --disable-shared
+DESTDIR=$cwd/stage/$wordsize make -j$(nproc) install
+if [ -f $cwd/stage/$wordsize/mingw*/lib/jpeg.lib ]; then
+    (cd $cwd/stage/$wordsize/mingw*/lib; mv jpeg.lib libjpeg.a);
+fi
+make distclean
+
+CC=cl CXX="cl -TP -GR" ./configure --disable-shared
+make
+cp -p .libs/jpeg.lib $cwd/stage/$wordsize/lib
+make distclean
+
+cd ..
+
+cd openssl*
+
+if [ "$wordsize" = "64" ]; then
+    mingw=mingw64
+else
+    mingw=mingw
+fi
+./Configure $mingw no-asm no-shared
+make -j$(nproc) install_dev DESTDIR=$cwd/ INSTALLTOP=stage/$wordsize
+
+make distclean
+OPATH=$PATH
+PATH=$cwd/build/perl/perl/bin:$PATH
+suf=
+if [ "$wordsize" = "64" ]; then
+    suf=I
+fi
+./Configure VC-WIN${wordsize}${suf} no-asm no-shared
+nmake install_dev INSTALLTOP=$cwd/stage/$wordsize
+PATH=$OPATH
+
+cd ..
