@@ -1,0 +1,36 @@
+See also "External Libraries" in TODO in qpdf/qpdf.
+
+RELEASE CREATION
+
+Download and extract a distribution artifact from a successful run.
+This contains qpdf-external-libs-{bin,src}.zip. Copy those into
+Q/storage/releases/qpdf/external-libs/yyyy-mm-dd.
+
+Get the value of overall_version from external-libs-src/versions in
+the qpdf-external-libs-src.zip file. You can just source the file.
+
+date=$(date +%Y-%m-%d)
+git tag -s release-$date @ -m"$date: $overall_version"
+git push upstream release-$date
+TOKEN=$(cat ~/.github-token)
+function gcurl() { curl -H "Authorization: token $TOKEN" ${1+"$@"}; }
+url=$(gcurl -s -XPOST https://api.github.com/repos/qpdf/external-libs/releases -d'{"tag_name": "release-'$date'", "name": "'$date': '$overall_version'", "draft": true}' | jq -r '.url')
+upload_url=$(gcurl -s $url | jq -r '.upload_url' | sed -E -e 's/\{.*\}//')
+
+From the release storage area:
+
+\rm -f *.sha256
+files=(*)
+sha256sum ${files[*]} >| qpdf-external-libs.sha256
+gpg --clearsign --armor qpdf-external-libs.sha256
+mv qpdf-external-libs.sha256.asc qpdf-external-libs.sha256
+chmod 444 *
+
+for i in *; do
+  mime=$(file -b --mime-type $i)
+  gcurl -H "Content-Type: $mime" --data-binary @$i "$upload_url?name=$i"
+done
+
+To finalize the release:
+
+gcurl -XPOST $url -d'{"draft": false}'
