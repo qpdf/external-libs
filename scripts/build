@@ -29,7 +29,7 @@ tar xzf ../dist/$openssl_dist
 tar xzf ../dist/$zlib_dist
 mkdir perl
 cd perl
-curl $perl_src -o $perl_dist
+curl -L $perl_src -o $perl_dist
 unzip -q $perl_dist
 cd ..
 

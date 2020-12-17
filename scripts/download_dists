@@ -73,7 +73,7 @@ openssl_src = f'{openssl_url}{openssl_version[0]}'
 
 overall_version = []
 
-perl_url = 'http://strawberryperl.com/releases.html'
+perl_url = 'https://strawberryperl.com/releases.html'
 r = requests.get(perl_url)
 versions = []
 for m in re.finditer(r'(?i)href="(.*?)"', r.text):
