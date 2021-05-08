@@ -12,8 +12,8 @@ the qpdf-external-libs-src.zip file. You can just source the file.
 date=$(date +%Y-%m-%d)
 git tag -s release-$date @ -m"$date: $overall_version"
 git push upstream release-$date
-TOKEN=$(cat ~/.github-token)
-function gcurl() { curl -H "Authorization: token $TOKEN" ${1+"$@"}; }
+GITHUB_TOKEN=$(qdata-show cred github-token)
+function gcurl() { curl -H "Authorization: token $GITHUB_TOKEN" ${1+"$@"}; }
 url=$(gcurl -s -XPOST https://api.github.com/repos/qpdf/external-libs/releases -d'{"tag_name": "release-'$date'", "name": "'$date': '$overall_version'", "draft": true}' | jq -r '.url')
 upload_url=$(gcurl -s $url | jq -r '.upload_url' | sed -E -e 's/\{.*\}//')
 
