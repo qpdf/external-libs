@@ -73,7 +73,7 @@ zlib_src = f'{zlib_url}{zlib_version[0]}'
 openssl_url = 'https://www.openssl.org/source/'
 r = get_url(openssl_url)
 versions = []
-for m in re.finditer(r'(?i)href="(openssl-(1.*?)\.tar\.gz)"', r.text):
+for m in re.finditer(r'(?i)href="(openssl-(3.*?)\.tar\.gz)"', r.text):
     versions.append((m.group(1), m.group(2)))
 openssl_version = max(versions, key=parse_openssl_version)
 openssl_src = f'{openssl_url}{openssl_version[0]}'
