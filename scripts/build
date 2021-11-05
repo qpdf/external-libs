@@ -80,7 +80,9 @@ if [ "$wordsize" = "64" ]; then
 else
     mingw=mingw
 fi
-./Configure $mingw no-shared
+# Note: no-module is required to prevent legacy providers, like rc4
+# and md5, from being in a dynamically loaded module.
+./Configure $mingw no-shared no-module
 make -j$(nproc) install_dev DESTDIR=$cwd/ INSTALLTOP=stage/$wordsize
 make distclean
 
@@ -91,7 +93,7 @@ suf=
 if [ "$wordsize" = "64" ]; then
     suf=A
 fi
-./Configure VC-WIN${wordsize}${suf} no-shared
+./Configure VC-WIN${wordsize}${suf} no-shared no-module
 nmake install_dev INSTALLTOP=$cwd/stage/$wordsize
 PATH=$OPATH
 
