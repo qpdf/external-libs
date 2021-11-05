@@ -54,6 +54,20 @@ def download_file(url):
     return local_filename
 
 
+nasm_url = 'https://www.nasm.us/'
+r = get_url(nasm_url)
+versions = []
+m = re.search(r'(?i)href="(.*?/releasebuilds/\d+.*?)"', r.text)
+if not m:
+    exit("can't find nasm download url")
+nasm_dist_url = f'{m.group(1)}/win64/'
+r = get_url(nasm_dist_url)
+versions = []
+for m in re.finditer(r'(?i)href="(nasm-(.*?)-win64.zip)"', r.text):
+    versions.append((m.group(1), version.parse(m.group(2))))
+nasm_version = max(versions, key=itemgetter(1))
+nasm_src = f'{nasm_dist_url}{nasm_version[0]}'
+
 jpeg_url = 'https://www.ijg.org/files/'
 r = get_url(jpeg_url)
 versions = []
@@ -96,6 +110,7 @@ os.makedirs('dist', exist_ok=True)
 download_file(jpeg_src)
 download_file(zlib_src)
 download_file(openssl_src)
+download_file(nasm_src)
 
 
 def print_version(prefix, v):
@@ -110,3 +125,5 @@ print_version('zlib', zlib_version)
 print(f'overall_version={",".join(overall_version)}')
 print(f'perl_src={perl_src}')
 print(f'perl_dist={os.path.basename(perl_src)}')
+print(f'nasm_src={nasm_src}')
+print(f'nasm_dist={os.path.basename(nasm_src)}')

@@ -32,6 +32,10 @@ cd perl
 curl -L $perl_src -o $perl_dist
 unzip -q $perl_dist
 cd ..
+mkdir nasm
+cd nasm
+unzip -q ../../dist/$nasm_dist
+cd ..
 
 cd zlib*
 make -j$(nproc) -f win32/Makefile.gcc install \
@@ -67,22 +71,27 @@ cd ..
 
 cd openssl*
 
+OPATH=$PATH
+nasm_path=$(echo $cwd/build/nasm/nasm-*)
+PATH=$nasm_path:$PATH
+nasm -v
 if [ "$wordsize" = "64" ]; then
     mingw=mingw64
 else
     mingw=mingw
 fi
-./Configure $mingw no-asm no-shared
+./Configure $mingw no-shared
 make -j$(nproc) install_dev DESTDIR=$cwd/ INSTALLTOP=stage/$wordsize
-
 make distclean
-OPATH=$PATH
+
+# Strawberry perl doesn't work when building with mingw in the msys
+# environment, so use it for the VC build only.
 PATH=$cwd/build/perl/perl/bin:$PATH
 suf=
 if [ "$wordsize" = "64" ]; then
-    suf=I
+    suf=A
 fi
-./Configure VC-WIN${wordsize}${suf} no-asm no-shared
+./Configure VC-WIN${wordsize}${suf} no-shared
 nmake install_dev INSTALLTOP=$cwd/stage/$wordsize
 PATH=$OPATH
 
