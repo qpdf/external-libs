@@ -31,6 +31,13 @@ def parse_openssl_version(v):
         return (version.parse('0'), '')
 
 
+def get_url(url, *args, **kwargs):
+    r = requests.get(url, headers={'User-Agent': 'qpdf/download_dists'},
+                     *args, **kwargs)
+    r.raise_for_status()
+    return r
+
+
 def download_file(url):
     # From https://stackoverflow.com/questions/16694907/
     # download-large-file-in-python-with-requests
@@ -39,7 +46,7 @@ def download_file(url):
         warn('Using existing', local_filename)
         return
     warn('Downloading', local_filename)
-    with requests.get(url, stream=True) as r:
+    with get_url(url, stream=True) as r:
         r.raise_for_status()
         with open(local_filename, 'wb') as f:
             for chunk in r.iter_content(chunk_size=8192):
@@ -47,8 +54,8 @@ def download_file(url):
     return local_filename
 
 
-jpeg_url = 'http://www.ijg.org/files/'
-r = requests.get(jpeg_url)
+jpeg_url = 'https://www.ijg.org/files/'
+r = get_url(jpeg_url)
 versions = []
 for m in re.finditer(r'(?i)href="(jpegsrc\.v(.*?)\.tar\.gz)"', r.text):
     versions.append((m.group(1), m.group(2)))
@@ -56,7 +63,7 @@ jpeg_version = max(versions, key=parse_jpeg_version)
 jpeg_src = f'{jpeg_url}{jpeg_version[0]}'
 
 zlib_url = 'http://www.zlib.net/'
-r = requests.get(zlib_url)
+r = get_url(zlib_url)
 versions = []
 for m in re.finditer(r'(?i)href="(zlib-((?:\w+\.)+\w+).*\.tar.gz)"', r.text):
     versions.append((m.group(1), version.parse(m.group(2))))
@@ -64,7 +71,7 @@ zlib_version = max(versions, key=itemgetter(1))
 zlib_src = f'{zlib_url}{zlib_version[0]}'
 
 openssl_url = 'https://www.openssl.org/source/'
-r = requests.get(openssl_url)
+r = get_url(openssl_url)
 versions = []
 for m in re.finditer(r'(?i)href="(openssl-(1.*?)\.tar\.gz)"', r.text):
     versions.append((m.group(1), m.group(2)))
@@ -74,7 +81,7 @@ openssl_src = f'{openssl_url}{openssl_version[0]}'
 overall_version = []
 
 perl_url = 'https://strawberryperl.com/releases.html'
-r = requests.get(perl_url)
+r = get_url(perl_url)
 versions = []
 for m in re.finditer(r'(?i)href="(.*?)"', r.text):
     v = m.group(1)
