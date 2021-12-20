@@ -2,6 +2,15 @@ See also "External Libraries" in TODO in qpdf/qpdf.
 
 RELEASE CREATION
 
+Check the most successful build at
+https://github.com/qpdf/external-libs/actions
+
+Look at the end of the output of the `Setup` step of the `Setup` Job
+to get the overall version.
+
+If any component is newer than the last time, proceed. Otherwise, no
+action is required.
+
 Download and extract a distribution artifact from a successful run.
 This contains qpdf-external-libs-{bin,src}.zip. Copy those into
 Q/storage/releases/qpdf/external-libs/yyyy-mm-dd.

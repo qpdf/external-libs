@@ -22,3 +22,12 @@ fi
 pip install requests packaging
 mkdir -p dist
 python scripts/download_dists > dist/versions
+
+set +x
+echo ""
+cat dist/versions
+echo ""
+source dist/versions
+echo "**********************************************************************"
+echo "OVERALL VERSION: $overall_version"
+echo "**********************************************************************"
