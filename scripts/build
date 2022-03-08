@@ -3,8 +3,17 @@
 set -ex
 cd $(dirname $0)/..
 
-if [ "$1" != "" ]; then
-    PATH=/c/msys64/mingw$1/bin:$PATH
+wordsize=$1
+if [ "$wordsize" != "" ]; then
+    pacman -Sy --noconfirm make base-devel tar zip unzip
+    if [ ! -x /c/msys64/mingw$wordsize/bin/g++.exe ]; then
+        if [[ $wordsize == 64 ]]; then
+            pacman -Sy --noconfirm mingw-w64-x86_64-toolchain
+        else
+            pacman -Sy --noconfirm mingw-w64-i686-toolchain
+        fi
+    fi
+    PATH=/c/msys64/mingw$wordsize/bin:$PATH
 fi
 
 if g++ -v 2>&1 | grep Target: | grep -q x86_64; then
