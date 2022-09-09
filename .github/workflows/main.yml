@@ -8,6 +8,7 @@ on:
       - 'README*'
   schedule:
     - cron: '12 4 * * 4'
+  workflow_dispatch:
 jobs:
   Setup:
     runs-on: ubuntu-latest
