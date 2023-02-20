@@ -5,8 +5,9 @@ RELEASE CREATION
 Check the most successful build at
 https://github.com/qpdf/external-libs/actions
 
-Look at the end of the output of the `Setup` step of the `Setup` Job
-to get the overall version.
+Look at the summary of the most recent build to find the overall
+version. This can also be found the end of the output of the `Setup`
+step of the `Setup` Job to get the overall version.
 
 If any component is newer than the last time, proceed. Otherwise, no
 action is required.

@@ -31,3 +31,9 @@ source dist/versions
 echo "**********************************************************************"
 echo "OVERALL VERSION: $overall_version"
 echo "**********************************************************************"
+
+cat >> $GITHUB_STEP_SUMMARY <<EOF
+# External Library Versions
+
+Overall version: **$overall_version**
+EOF
