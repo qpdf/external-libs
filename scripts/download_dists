@@ -90,7 +90,7 @@ versions = []
 for m in re.finditer(r'(?i)href="(.*?openssl-(3\.[a-z0-9\.]*?)\.tar\.gz)"', r.text):
     versions.append((m.group(1), m.group(2)))
 openssl_version = max(versions, key=parse_openssl_version)
-openssl_src = f'{openssl_version[0]}'
+openssl_src = openssl_version[0]
 
 overall_version = []
 
@@ -115,7 +115,7 @@ download_file(nasm_src)
 
 def print_version(prefix, v):
     overall_version.append(f'{prefix}-{v[1]}')
-    print(f'{prefix}_dist={v[0]}')
+    print(f'{prefix}_dist={os.path.basename(v[0])}')
     print(f'{prefix}_version={v[1]}')
 
 
