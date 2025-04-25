@@ -32,6 +32,7 @@ def parse_openssl_version(v):
 
 
 def get_url(url, *args, **kwargs):
+    warn(f'GET {url}')
     r = requests.get(url, headers={'User-Agent': 'qpdf/download_dists'},
                      *args, **kwargs)
     r.raise_for_status()
@@ -61,12 +62,18 @@ m = re.search(r'(?i)href="(.*?/releasebuilds/\d+.*?)"', r.text)
 if not m:
     exit("can't find nasm download url")
 nasm_dist_url = f'{m.group(1)}/win64/'
+if not nasm_dist_url.startswith('https://'):
+    nasm_dist_url = f'https://www.nasm.us/{nasm_dist_url.removeprefix("/")}'
+warn(f'found nasm dist url: {nasm_dist_url}')
 r = get_url(nasm_dist_url)
 versions = []
 for m in re.finditer(r'(?i)href="(nasm-(.*?)-win64.zip)"', r.text):
-    versions.append((m.group(1), version.parse(m.group(2))))
+    (version_data) = (m.group(1), version.parse(m.group(2)))
+    warn(f'available nasm version: {version_data}')
+    versions.append(version_data)
 nasm_version = max(versions, key=itemgetter(1))
 nasm_src = f'{nasm_dist_url}{nasm_version[0]}'
+warn(f'nasm src: {nasm_src}')
 
 jpeg_url = 'https://www.ijg.org/files/'
 r = get_url(jpeg_url)
