@@ -101,17 +101,24 @@ openssl_src = openssl_version[0]
 
 overall_version = []
 
-perl_url = 'https://strawberryperl.com/releases.html'
-r = get_url(perl_url)
-versions = []
-for m in re.finditer(r'(?i)href="(.*?)"', r.text):
-    v = m.group(1)
-    if '64bit-portable' in v:
-        m = re.search(r'perl-(\d+(\.\d+)*)-64bit-portable', v)
-        if m:
-            versions.append((v, version.parse(m.group(1))))
-perl_version = max(versions, key=itemgetter(1))
-perl_src = perl_version[0]
+# 2026-01-08: The strawberryperl releases page now dynamically
+# generates the table of releases using JavaScript. That marks the end
+# of this hack. We are deprecating external-libs in favor of vcpkg. To
+# get one more release out the door with the old system, temporary
+# hard-code a URL for Strawberry perl.
+# perl_url = 'https://strawberryperl.com/releases.html'
+# r = get_url(perl_url)
+# versions = []
+# for m in re.finditer(r'(?i)href="(.*?)"', r.text):
+#     v = m.group(1)
+#     if '64bit-portable' in v:
+#         m = re.search(r'perl-(\d+(\.\d+)*)-64bit-portable', v)
+#         if m:
+#             versions.append((v, version.parse(m.group(1))))
+# perl_version = max(versions, key=itemgetter(1))
+# perl_src = perl_version[0]
+perl_version = "5.42.0.1"
+perl_src = "https://github.com/StrawberryPerl/Perl-Dist-Strawberry/releases/download/SP_54201_64bit/strawberry-perl-5.42.0.1-64bit-portable.zip"
 
 os.makedirs('dist', exist_ok=True)
 download_file(jpeg_src)
