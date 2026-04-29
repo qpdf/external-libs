@@ -1,9 +1,9 @@
 @echo on
 @rem Usage: build-windows {32|64}
 setlocal ENABLEDELAYEDEXPANSION
-if %1 == 64 (
+if "%1" == "x64-windows-static" (
    call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
-) else (
+) else if "%1" == "x86-windows-static" (
    call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars32.bat"
 )
 set MSYS2_PATH_TYPE=inherit

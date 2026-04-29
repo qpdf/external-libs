@@ -1,27 +1,7 @@
 # Overview
 
-This repository contains the code to build the external libraries used in the official Windows builds. They are triggered automatically using GithubActions.
+This repository contains the code to build the external libraries used in the official Windows builds. They are triggered automatically using GitHub Actions. Please see [.github/workflows/main.yml](./.github/workflows/main.yml) and the scripts in [./scripts](./scripts/). This is just a wrapper around vcpkg that creates a zip whose contents are understood by the main qpdf build.
 
-# Running Manually
+# Rationale
 
-Create a 32-bit environment by starting MSVC 32-bit runtime and, from
-there, running
-
-```
-set MSYS2_PATH_TYPE=inherit
-C:\msys64\mingw32
-```
-
-Create a 64-bit environment in the same way using `mingw64` instead of `mingw32`.
-
-From Linux, run `./scripts/setup`
-
-From Windows, run `./scripts/build` separately from the 32-bit and 64-bit environments.
-
-After both are done, from Linux, run `./scripts/package`.
-
-To clean up, run `./scripts/clean`.
-
-The resulting `qpdf-external-libs-bin.zip` file can be extracted in
-the qpdf source directory for the Windows build. For details, please
-see README-windows.txt in the qpdf source distribution.
+vcpkg has a complete ecosystem with numerous packages, but it is more involved and complex than we need for the qpdf build. It may be useful at some future time to integrate vcpkg into the main qpdf build, but for simplicity, we use vcpkg in this external project to create a zip file that the qpdf build uses. Prior to switching to vcpkg, this repository used to scrape distribution websites and build "by hand" for Windows. Switching to external vcpkg like this is a considerable improvement to *this* process and invisible to the main build.

@@ -6,25 +6,25 @@ Check the most successful build at
 https://github.com/qpdf/external-libs/actions
 
 Look at the summary of the most recent build to find the overall
-version. This can also be found the end of the output of the `Setup`
-step of the `Setup` Job to get the overall version.
+version. This can also be found the end of the output of the `Package`
+step of the `Package` Job to get the overall version.
 
 If any component is newer than the last time, proceed. Otherwise, no
 action is required.
 
 Download and extract a distribution artifact from a successful run.
-This contains qpdf-external-libs-{bin,src}.zip. Copy those into
+This contains qpdf-external-libs-bin.zip. Copy it into
 Q/storage/releases/qpdf/external-libs/yyyy-mm-dd.
 
-Get the value of overall_version from external-libs-src/versions in
-the qpdf-external-libs-src.zip file. You can just source the file.
+Get the value of overall_version from external-libs-bin/version in
+the qpdf-external-libs-bin.zip file. You can just source the file.
 
 date=$(date +%Y-%m-%d)
-git tag -s release-$date @ -m"$date: $overall_version"
+git tag -s release-$date @ -m"$date: $version"
 git push qpdf release-$date
 GITHUB_TOKEN=$(qdata-show cred github-token)
 function gcurl() { curl -H "Authorization: token $GITHUB_TOKEN" ${1+"$@"}; }
-url=$(gcurl -s -XPOST https://api.github.com/repos/qpdf/external-libs/releases -d'{"tag_name": "release-'$date'", "name": "'$date': '$overall_version'", "draft": true}' | jq -r '.url')
+url=$(gcurl -s -XPOST https://api.github.com/repos/qpdf/external-libs/releases -d'{"tag_name": "release-'$date'", "name": "'$date': '$version'", "draft": true}' | jq -r '.url')
 upload_url=$(gcurl -s $url | jq -r '.upload_url' | sed -E -e 's/\{.*\}//')
 
 From the release storage area:

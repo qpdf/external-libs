@@ -1,4 +1,0 @@
-#!/bin/sh
-set -ex
-cd $(dirname $0)/..
-rm -rf dist build stage external-libs

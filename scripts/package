@@ -3,27 +3,49 @@
 set -ex
 cd $(dirname $0)/..
 
-rm -rf external-libs external-libs-src distribution
+rm -rf external-libs distribution
 mkdir external-libs
-mkdir external-libs/include
-cp -p stage/64/include/*.h external-libs/include
-cp -p stage/64/mingw*/include/*.h external-libs/include
-cp -a stage/64/include/openssl external-libs/include
+cp -a stage/x64-windows-static/include external-libs/include
 for i in 32 64; do
     mkdir external-libs/lib-mingw$i
-    cp -p stage/$i/lib*/lib*.a external-libs/lib-mingw$i
-    cp -p stage/$i/mingw*/lib*/lib*.a external-libs/lib-mingw$i
     mkdir external-libs/lib-msvc$i
-    cp -p stage/$i/lib*/*.lib external-libs/lib-msvc$i
-    (cd external-libs/lib-msvc$i; \
-        mv libssl.lib ssl.lib; mv libcrypto.lib crypto.lib)
 done
+
+cp -p stage/x64-windows-static/lib/*.lib external-libs/lib-msvc64
+cp -p stage/x86-windows-static/lib/*.lib external-libs/lib-msvc32
+cp -p stage/x64-mingw-static/lib/lib*.a external-libs/lib-mingw64
+cp -p stage/x86-mingw-static/lib/lib*.a external-libs/lib-mingw32
+# Rename for compatibility with other systems, our historical
+# external-libs, and to conform to what qpdf expects.
+for i in external-libs/lib-msvc*; do
+    (cd $i; mv libssl.lib ssl.lib; mv libcrypto.lib crypto.lib; mv zs.lib z.lib)
+done
+for i in external-libs/lib-mingw*; do
+    (cd $i; mv libzs.a libz.a)
+done
+
+overall_version=
+for pkg in libjpeg-turbo openssl zlib; do
+    version=$(awk "/${pkg}:/ {print \$2}" < stage/x64-windows-static/vcpkg-list)
+    if [ "$overall_version" != "" ]; then
+        overall_version="${overall_version},"
+    fi
+    overall_version="${overall_version}${pkg}-${version}"
+done
+
+echo "version=${overall_version}" > external-libs/version
 
 mkdir -p distribution
 zip -r distribution/qpdf-external-libs-bin.zip external-libs
-mkdir external-libs-src
-mv dist/jpeg* external-libs-src
-mv dist/openssl* external-libs-src
-mv dist/zlib* external-libs-src
-mv dist/versions external-libs-src
-zip -r distribution/qpdf-external-libs-src.zip external-libs-src
+
+set +x
+echo ""
+echo "**********************************************************************"
+echo "OVERALL VERSION: $overall_version"
+echo "**********************************************************************"
+
+if [ "$GITHUB_STEP_SUMMARY" != "" ]; then
+    cat >> $GITHUB_STEP_SUMMARY <<EOF
+Overall version: **$overall_version**
+EOF
+fi
