@@ -1,13 +1,13 @@
 name: External Libraries
 on:
-  push:
-    branches:
-      - main
-      - build
-    paths-ignore:
-      - 'README*'
-  schedule:
-    - cron: '12 4 * * 4'
+#  push:
+#    branches:
+#      - main
+#      - build
+#    paths-ignore:
+#      - 'README*'
+#  schedule:
+#    - cron: '12 4 * * 4'
   workflow_dispatch:
 jobs:
   Build:

@@ -1,3 +1,7 @@
+# DEPRECATED
+
+This repository is no longer in use. Instead, we use `vcpkg` from the qpdf repository itself. Releases of the vcpkg.zip that replaces external-libs can be found at [this release](https://github.com/qpdf/qpdf/releases/tag/vcpkg-cache-v1) in the qpdf repository. If it's not there, consult README files in qpdf as this README file will not be maintained after archiving the repository.)
+
 # Overview
 
 This repository contains the code to build the external libraries used in the official Windows builds. They are triggered automatically using GitHub Actions. Please see [.github/workflows/main.yml](./.github/workflows/main.yml) and the scripts in [./scripts](./scripts/). This is just a wrapper around vcpkg that creates a zip whose contents are understood by the main qpdf build.
